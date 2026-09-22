@@ -16,6 +16,40 @@ songs <- read.csv("/Users/lukesnavely/Desktop/Capstone/Data/Top_100_Running_Song
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  theme = bs_theme(
+    version = 5,
+    bg = "#121212",# Dark background
+    fg = "#FFFFFF", # White text
+    primary = "#1DB954", # Spotify green
+    secondary = "#1DB954"
+  ),
+  
+  # Custom HTML
+  tags$head(
+    tags$style(HTML("
+    .btn-custom {
+      background-color: #1DB954;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+    }
+
+    .btn-custom:hover {
+      background-color: #1AA34A;
+      color: white;
+    }
+    
+    h2 {
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+  "))
+  ),
+  
   # Title
   titlePanel("Running Song Generator"),
   
@@ -37,10 +71,14 @@ ui <- fluidPage(
   ),
   
   # Button to generate results
-  actionButton("generate", "Generate Running Songs"),
+  actionButton("generate", "Generate Running Songs", class = "btn-custom", width = "100%"),
+  
+  # Breaks
+  br(),
+  br(),
 
   # Display estimated SPM
-  textOutput("estimated_spm"),
+  uiOutput("estimated_spm"),
   
   # Showing matched songs to calculated cadence
   dataTableOutput("matching_songs"),
@@ -81,11 +119,36 @@ server <- function(input, output, session) {
   })
   
   # This is the estimated cadence
-  output$estimated_spm <- renderText({
-    paste(
-      "Estimated cadence: ",
-      round(estimated_spm()),
-      " Steps per Minute"
+  output$estimated_spm <- renderUI({
+    
+    req(estimated_spm())
+    
+    div(
+      style = "
+      text-align: center;
+      background-color: #282828;
+      padding: 10px;
+      margin: 5px;
+    ",
+      
+      h4(
+        "YOUR ESTIMATED CADENCE",
+        style = "color: white;"
+      ),
+      
+      h1(
+        paste(round(estimated_spm()), "SPM"),
+        style = "
+        color: #1DB954;
+        font-size: 30px;
+        font-weight: bold;
+      "
+      ),
+      
+      p(
+        "Steps per Minute",
+        style = "color: #BBBBBB;"
+      )
     )
   })
   
@@ -114,9 +177,7 @@ server <- function(input, output, session) {
     req(input$selected_song)
     
     # Convert Spotify URI:
-    # spotify:track:6epn3r7S14KUqlReYr77hA
-    # into:
-    # 6epn3r7S14KUqlReYr77hA
+    # spotify:track:6epn3r7S14KUqlReYr77hA into: 6epn3r7S14KUqlReYr77hA
     track_id <- sub(
       "spotify:track:",
       "",
@@ -152,13 +213,9 @@ server <- function(input, output, session) {
       '</button>'
     )
     
+    # Selecting a subset of columns
     results |>
-      dplyr::select(
-        Track.Name,
-        Artist.Name.s.,
-        Tempo,
-        Play
-      )
+      dplyr::select(Track.Name, Artist.Name.s., Tempo, Play)
     
   },
   escape = FALSE,
