@@ -12,7 +12,7 @@ library(bslib) # For themes
 library(DT)
 
 # Reading in top running songs
-songs <- read.csv("/Users/lukesnavely/Desktop/Capstone/Data/Top_100_Running_Songs.csv")
+songs <- read.csv("/Users/lukesnavely/Desktop/Capstone/Running Application/RunningApp/Potential_songs.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -27,48 +27,203 @@ ui <- fluidPage(
   # Custom HTML
   tags$head(
     tags$style(HTML("
-    .btn-custom {
-      background-color: #1DB954;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      border: none;
-    }
-
-    .btn-custom:hover {
-      background-color: #1AA34A;
-      color: white;
-    }
-    
-    h2 {
-      color: white;
-      font-size: 40px;
-      font-weight: bold;
-      text-align: center;
-    }
-    
+      .btn-custom {
+        background-color: #1DB954;
+        color: black;
+        font-size: 20px;
+        font-weight: bold;
+        border: none;
+      }
+      
+      .btn-custom:hover {
+        background-color: #1AA34A;
+        color: white;
+      }
+      
+      h2 {
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        text-align: center;
+      }
+      
+      /* Style numeric input boxes */
+      .form-control {
+        background-color: #282828;
+        color: white;
+        border: 1px solid #535353;
+        border-radius: 8px;
+        font-size: 16px;
+        padding: 10px;
+        width: 100%;
+        height: 45px;
+        box-sizing: border-box;
+      }
+      
+      /* Style input boxes when selected */
+      .form-control:focus {
+        background-color: #282828;
+        color: white;
+        border: 1px solid #1DB954;
+        box-shadow: 0 0 5px #1DB954;
+      }
+      
+      /* Style input labels */
+      .control-label {
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      
+      .pace-control {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 4px;
+        margin-bottom: 20px;
+      }
+      
+      .pace-input {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .pace-input .form-group {
+        margin-bottom: 0;
+      }
+      
+      .pace-input .form-control {
+        background-color: #282828;
+        color: white;
+        border: 1px solid #535353;
+        border-radius: 8px;
+        font-size: 20px;
+        text-align: center;
+        height: 45px;
+      }
+      
+      .pace-colon {
+        color: white;
+        font-size: 25px;
+        font-weight: bold;
+        margin: 0 2px;
+      }
   "))
   ),
   
   # Title
   titlePanel("Running Song Generator"),
   
-  # Inputting height
-  numericInput("height", "Height (inches):",
-               value = 70, min = 48, max = 84),
+  # Text blurb + pic
+  div(
+    style = "
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+  ",
+    
+    img(
+      src = "Running.jpg",
+      style = "
+      width: 200px;
+      height: 100px;
+      object-fit: contain;
+      flex-shrink: 0;
+    "
+    ),
+    
+    p(
+      HTML(
+        "This application uses a statistical model to predict your steps per minute (SPM) while running, 
+        based on height, age, and desired pace.<sup>1</sup> Please input your running 
+        information to generate songs with a beats per minute (BPM) close to your SPM!"
+      ),
+      style = "
+      color: white;
+      font-size: 20px;
+      line-height: 1.5;
+      margin: 0;
+    "
+    )
+  ),
   
-  # Inputting age
-  numericInput("age", "Age (Years):",
-               value = 20, min = 10, max = 100),
+  # Green Divider
+  div(
+    style = "
+    border-top: 2px solid #1DB954;
+    margin: 25px 0;
+  "
+  ),
+  
+  # Title for Running Information
+  h3("Input your Running Information", style = "
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 15px;"),
+  
+  # Height Input
+  fluidRow(
+    column(6, numericInput("height",
+                           "Height (inches)",
+                           value = 70,
+                           min = 48,
+                           max = 84,
+                           width = "100%")
+    ),
+    # Age input
+    column(6, numericInput("age",
+                           "Age (years)",
+                           value = 20,
+                           min = 10,
+                           max = 100,
+                           width = "100%")
+    )
+  ),
   
   # Minutes and Seconds inputs
-  tags$label("Pace Input", class = "control-label"),
-  fluidRow(
-    column(2, numericInput("MINUTES", label = NULL, value = 8, min = 5, max = 15, step = 1)), # Minutes box
-    column(1, p("min", style = "margin-top: 8px; font-weight: bold;")), # Minutes title
-    column(2, numericInput("SECONDS", label = NULL, value = 0, min = 0, max = 59, step = 15)), # Seconds box
-    column(1, p("sec", style = "margin-top: 8px; font-weight: bold;")) # Seconds title
+  # Pace Input
+  tags$label("Intended Pace (minutes : seconds)", class = "control-label"),
+  div(
+    class = "pace-control",
+    # Minutes box
+    div(
+      class = "pace-input",
+      numericInput(
+        "MINUTES",
+        label = NULL,
+        value = 8,
+        min = 5,
+        max = 15,
+        step = 1,
+        width = "100%"
+      )
+    ),
+    # Colon box
+    div(
+      class = "pace-colon",
+      ":"
+    ),
+    # Seconds box
+    div(
+      class = "pace-input",
+      numericInput(
+        "SECONDS",
+        label = NULL,
+        value = 0,
+        min = 0,
+        max = 59,
+        step = 15,
+        width = "100%"
+      )
+    )
   ),
+  
+  # Breaks
+  br(),
   
   # Button to generate results
   actionButton("generate", "Generate Running Songs", class = "btn-custom", width = "100%"),
@@ -79,6 +234,9 @@ ui <- fluidPage(
 
   # Display estimated SPM
   uiOutput("estimated_spm"),
+  
+  # Title for suggested songs
+  uiOutput("song_generator_title"),
   
   # Showing matched songs to calculated cadence
   dataTableOutput("matching_songs"),
@@ -137,38 +295,36 @@ server <- function(input, output, session) {
       ),
       
       h1(
-        paste(round(estimated_spm()), "SPM"),
+        paste(round(estimated_spm()), "Steps per Minute"),
         style = "
         color: #1DB954;
         font-size: 30px;
         font-weight: bold;
       "
       ),
-      
-      p(
-        "Steps per Minute",
-        style = "color: #BBBBBB;"
-      )
+    )
+  })
+  
+  
+  # Title for songs
+  output$song_generator_title <- renderUI({
+    req(estimated_spm())
+    h3("Suggested Running Songs", style = "
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 15px;
+  "
     )
   })
   
   # Filtering for songs that match the BPM
   matching_songs <- eventReactive(input$generate, {
-    
-    # BPM of the song
-    bpm <- 203.056 +
-      0.193 * input$age -
-      44.242 * height_m() +
-      3.067 * speed_kmh()
 
     songs |>
-      dplyr::filter(Tempo <= bpm + 5, Tempo >= bpm - 5) |>
-      dplyr::select(
-        Track.URI,
-        Track.Name,
-        Artist.Name.s.,
-        Tempo
-      )
+      dplyr::filter(Tempo <= estimated_spm() + 5, Tempo >= estimated_spm() - 5)
   })
   
   # Create Spotify player
@@ -215,7 +371,9 @@ server <- function(input, output, session) {
     
     # Selecting a subset of columns
     results |>
-      dplyr::select(Track.Name, Artist.Name.s., Tempo, Play)
+      # Rounding tempo
+      dplyr::mutate(Tempo = round(Tempo)) |> 
+      dplyr::select(Artist = Artist.Name.s., Song = Track.Name, Album = Album.Name, `Tempo (BPM)` = Tempo, Play)
     
   },
   escape = FALSE,
